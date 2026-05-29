@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Auto-push current branch to origin after each commit.
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+  echo "[post-commit] skip: remote 'origin' not set"
+  exit 0
+fi
+
+# Push and set upstream on first push if needed.
+git push -u origin "$branch"
