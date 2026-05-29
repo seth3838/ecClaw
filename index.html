@@ -3,261 +3,175 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Snake Game</title>
+  <title>To Do List</title>
   <style>
     :root {
-      --bg: #f2f7ff;
+      --bg: #f4f7fb;
       --card: #ffffff;
-      --line: #dbe7ff;
+      --line: #dbe3ef;
       --text: #1f2937;
       --muted: #64748b;
-      --snake: #16a34a;
-      --food: #ef4444;
-      --btn: #2563eb;
+      --brand: #2563eb;
+      --ok: #16a34a;
+      --danger: #ef4444;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      background: radial-gradient(circle at 20% 10%, #e9f2ff, var(--bg));
+      background: linear-gradient(180deg, #eaf2ff 0%, var(--bg) 40%, #f8fafc 100%);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--text);
       min-height: 100dvh;
       display: flex;
       justify-content: center;
-      padding: 14px;
+      padding: 16px;
     }
-
-    .app {
-      width: 100%;
-      max-width: 430px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .panel {
+    .app { width: 100%; max-width: 460px; display: grid; gap: 12px; }
+    .card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 16px;
-      padding: 12px;
+      padding: 14px;
     }
-
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
+    h1 { margin: 0 0 8px; font-size: 22px; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    input {
+      width: 100%; border: 1px solid var(--line); border-radius: 10px;
+      padding: 12px; font-size: 16px; outline: none;
     }
-
-    .title { font-size: 18px; font-weight: 700; }
-    .score { font-weight: 700; color: #0f172a; }
-    .hint { margin-top: 4px; font-size: 12px; color: var(--muted); }
-
-    canvas {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      display: block;
-      border-radius: 12px;
-      background: #f8fbff;
-      border: 1px solid var(--line);
-    }
-
-    .actions {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      user-select: none;
-    }
-
+    input:focus { border-color: var(--brand); }
     button {
-      border: 0;
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      background: var(--btn);
-      color: #fff;
+      border: 0; border-radius: 10px; padding: 10px 14px;
+      background: var(--brand); color: #fff; font-weight: 600; font-size: 14px;
     }
-
-    .ghost {
-      background: #94a3b8;
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    li {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+      border: 1px solid var(--line); border-radius: 10px; padding: 10px;
     }
-
-    .empty { visibility: hidden; }
+    .done-text { text-decoration: line-through; color: #94a3b8; }
+    .check {
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--brand);
+      display: grid; place-items: center; cursor: pointer; font-size: 12px;
+      color: white; background: white;
+    }
+    .check.done { background: var(--ok); border-color: var(--ok); }
+    .del { background: var(--danger); padding: 8px 10px; font-size: 12px; }
+    .footer { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; }
+    .ghost { background: #94a3b8; }
   </style>
 </head>
 <body>
   <main class="app">
-    <section class="panel">
-      <div class="top">
-        <div class="title">贪吃蛇</div>
-        <div class="score">分数: <span id="score">0</span></div>
+    <section class="card">
+      <h1>To Do List</h1>
+      <div class="meta">本地自动保存，刷新页面也不会丢。</div>
+    </section>
+
+    <section class="card">
+      <div class="input-row">
+        <input id="todoInput" type="text" placeholder="输入待办事项..." maxlength="120" />
+        <button id="addBtn">添加</button>
       </div>
-      <div class="hint">手势/按钮/键盘方向键都可控制，撞墙或撞自己即结束。</div>
     </section>
 
-    <section class="panel">
-      <canvas id="game" width="360" height="360" aria-label="snake game"></canvas>
-    </section>
-
-    <section class="panel actions">
-      <button class="empty" aria-hidden="true">.</button>
-      <button data-dir="up">上</button>
-      <button class="ghost" id="restart">重开</button>
-      <button data-dir="left">左</button>
-      <button data-dir="down">下</button>
-      <button data-dir="right">右</button>
+    <section class="card">
+      <ul id="list"></ul>
+      <div class="footer" style="margin-top: 10px;">
+        <span id="count">0 项</span>
+        <button id="clearDone" class="ghost">清除已完成</button>
+      </div>
     </section>
   </main>
 
   <script>
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    const scoreEl = document.getElementById('score');
-    const restartBtn = document.getElementById('restart');
-    const dirBtns = document.querySelectorAll('[data-dir]');
+    const KEY = 'ecclaw_todos_v1';
+    const input = document.getElementById('todoInput');
+    const addBtn = document.getElementById('addBtn');
+    const list = document.getElementById('list');
+    const count = document.getElementById('count');
+    const clearDone = document.getElementById('clearDone');
 
-    const gridSize = 18;
-    const tile = canvas.width / gridSize;
+    let todos = [];
 
-    let snake, direction, nextDirection, food, score, timer, speed;
-
-    function randPos() {
-      return {
-        x: Math.floor(Math.random() * gridSize),
-        y: Math.floor(Math.random() * gridSize),
-      };
+    function save() {
+      localStorage.setItem(KEY, JSON.stringify(todos));
     }
 
-    function reset() {
-      snake = [{ x: 9, y: 9 }, { x: 8, y: 9 }, { x: 7, y: 9 }];
-      direction = 'right';
-      nextDirection = 'right';
-      score = 0;
-      speed = 150;
-      scoreEl.textContent = score;
-      spawnFood();
-      restartLoop();
-      draw();
-    }
-
-    function spawnFood() {
-      let p;
-      do {
-        p = randPos();
-      } while (snake.some(s => s.x === p.x && s.y === p.y));
-      food = p;
-    }
-
-    function setDirection(dir) {
-      const opposite = {
-        up: 'down',
-        down: 'up',
-        left: 'right',
-        right: 'left',
-      };
-      if (dir !== opposite[direction]) nextDirection = dir;
-    }
-
-    function step() {
-      direction = nextDirection;
-      const head = { ...snake[0] };
-      if (direction === 'up') head.y -= 1;
-      if (direction === 'down') head.y += 1;
-      if (direction === 'left') head.x -= 1;
-      if (direction === 'right') head.x += 1;
-
-      const hitWall = head.x < 0 || head.y < 0 || head.x >= gridSize || head.y >= gridSize;
-      const hitSelf = snake.some(s => s.x === head.x && s.y === head.y);
-      if (hitWall || hitSelf) {
-        clearInterval(timer);
-        alert(`游戏结束，得分 ${score}`);
-        return;
-      }
-
-      snake.unshift(head);
-      if (head.x === food.x && head.y === food.y) {
-        score += 1;
-        scoreEl.textContent = score;
-        spawnFood();
-        if (speed > 80 && score % 3 === 0) {
-          speed -= 8;
-          restartLoop();
-        }
-      } else {
-        snake.pop();
-      }
-      draw();
-    }
-
-    function restartLoop() {
-      clearInterval(timer);
-      timer = setInterval(step, speed);
-    }
-
-    function drawGrid() {
-      ctx.strokeStyle = '#e5ecfb';
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= gridSize; i++) {
-        ctx.beginPath();
-        ctx.moveTo(i * tile, 0);
-        ctx.lineTo(i * tile, canvas.height);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(0, i * tile);
-        ctx.lineTo(canvas.width, i * tile);
-        ctx.stroke();
+    function load() {
+      try {
+        todos = JSON.parse(localStorage.getItem(KEY) || '[]');
+        if (!Array.isArray(todos)) todos = [];
+      } catch {
+        todos = [];
       }
     }
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawGrid();
+    function addTodo(text) {
+      const value = text.trim();
+      if (!value) return;
+      todos.unshift({ id: Date.now(), text: value, done: false });
+      save();
+      render();
+      input.value = '';
+      input.focus();
+    }
 
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--food').trim();
-      ctx.fillRect(food.x * tile + 2, food.y * tile + 2, tile - 4, tile - 4);
+    function toggleTodo(id) {
+      todos = todos.map(t => t.id === id ? { ...t, done: !t.done } : t);
+      save();
+      render();
+    }
 
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--snake').trim();
-      snake.forEach((s, i) => {
-        const pad = i === 0 ? 1 : 2;
-        ctx.fillRect(s.x * tile + pad, s.y * tile + pad, tile - pad * 2, tile - pad * 2);
+    function deleteTodo(id) {
+      todos = todos.filter(t => t.id !== id);
+      save();
+      render();
+    }
+
+    function render() {
+      list.innerHTML = '';
+      todos.forEach(todo => {
+        const li = document.createElement('li');
+
+        const check = document.createElement('button');
+        check.className = 'check' + (todo.done ? ' done' : '');
+        check.textContent = todo.done ? '✓' : '';
+        check.addEventListener('click', () => toggleTodo(todo.id));
+
+        const text = document.createElement('div');
+        text.textContent = todo.text;
+        if (todo.done) text.className = 'done-text';
+
+        const del = document.createElement('button');
+        del.className = 'del';
+        del.textContent = '删除';
+        del.addEventListener('click', () => deleteTodo(todo.id));
+
+        li.appendChild(check);
+        li.appendChild(text);
+        li.appendChild(del);
+        list.appendChild(li);
       });
+
+      const doneCount = todos.filter(t => t.done).length;
+      count.textContent = `${todos.length} 项（已完成 ${doneCount}）`;
     }
 
-    window.addEventListener('keydown', (e) => {
-      const keyMap = {
-        ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-      };
-      if (keyMap[e.key]) {
-        e.preventDefault();
-        setDirection(keyMap[e.key]);
-      }
-    }, { passive: false });
+    addBtn.addEventListener('click', () => addTodo(input.value));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addTodo(input.value);
+    });
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    canvas.addEventListener('touchstart', (e) => {
-      const t = e.changedTouches[0];
-      touchStartX = t.clientX;
-      touchStartY = t.clientY;
-    }, { passive: true });
+    clearDone.addEventListener('click', () => {
+      todos = todos.filter(t => !t.done);
+      save();
+      render();
+    });
 
-    canvas.addEventListener('touchend', (e) => {
-      const t = e.changedTouches[0];
-      const dx = t.clientX - touchStartX;
-      const dy = t.clientY - touchStartY;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        setDirection(dx > 10 ? 'right' : 'left');
-      } else {
-        setDirection(dy > 10 ? 'down' : 'up');
-      }
-    }, { passive: true });
-
-    dirBtns.forEach(btn => btn.addEventListener('click', () => setDirection(btn.dataset.dir)));
-    restartBtn.addEventListener('click', reset);
-
-    reset();
+    load();
+    render();
   </script>
 </body>
 </html>
