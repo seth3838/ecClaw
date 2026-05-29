@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 # Auto-push current branch to origin after each commit.
 branch="$(git rev-parse --abbrev-ref HEAD)"
@@ -10,4 +10,8 @@ if ! git remote get-url origin >/dev/null 2>&1; then
 fi
 
 # Push and set upstream on first push if needed.
-git push -u origin "$branch"
+if ! git push -u origin "$branch"; then
+  echo "[post-commit] warning: auto-push failed."
+  echo "[post-commit] hint: configure GitHub auth (PAT/credential manager or SSH key), then run:"
+  echo "  git push -u origin $branch"
+fi
