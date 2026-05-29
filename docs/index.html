@@ -3,129 +3,261 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>ecClaw Mobile</title>
+  <title>Snake Game</title>
   <style>
     :root {
-      --bg: #f6f8fb;
+      --bg: #f2f7ff;
       --card: #ffffff;
+      --line: #dbe7ff;
       --text: #1f2937;
-      --muted: #6b7280;
-      --brand: #0ea5e9;
-      --brand-2: #22c55e;
-      --radius: 16px;
+      --muted: #64748b;
+      --snake: #16a34a;
+      --food: #ef4444;
+      --btn: #2563eb;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      background: radial-gradient(circle at 20% 10%, #e9f2ff, var(--bg));
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--text);
-      background: linear-gradient(180deg, #eef6ff 0%, var(--bg) 42%, #f8fafc 100%);
       min-height: 100dvh;
       display: flex;
       justify-content: center;
-      padding: 16px;
+      padding: 14px;
     }
 
     .app {
       width: 100%;
-      max-width: 420px;
+      max-width: 430px;
       display: grid;
-      gap: 14px;
-      align-content: start;
-    }
-
-    .hero {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 12px;
-      color: white;
-      background: linear-gradient(90deg, var(--brand), #3b82f6);
-      padding: 4px 10px;
-      border-radius: 999px;
-    }
-
-    h1 {
-      font-size: 22px;
-      line-height: 1.3;
-      margin: 12px 0 8px;
-    }
-
-    p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 14px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
 
-    .card {
+    .panel {
       background: var(--card);
-      border-radius: 14px;
-      padding: 14px;
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
     }
 
-    .card strong {
-      display: block;
-      font-size: 17px;
-      margin-bottom: 4px;
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
     }
 
-    .btn {
-      border: 0;
+    .title { font-size: 18px; font-weight: 700; }
+    .score { font-weight: 700; color: #0f172a; }
+    .hint { margin-top: 4px; font-size: 12px; color: var(--muted); }
+
+    canvas {
       width: 100%;
+      aspect-ratio: 1 / 1;
+      display: block;
       border-radius: 12px;
-      background: linear-gradient(90deg, var(--brand), var(--brand-2));
-      color: #fff;
-      padding: 12px 14px;
+      background: #f8fbff;
+      border: 1px solid var(--line);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      user-select: none;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px;
       font-size: 15px;
       font-weight: 600;
-      margin-top: 8px;
-      cursor: pointer;
+      background: var(--btn);
+      color: #fff;
     }
 
-    .footer {
-      text-align: center;
-      font-size: 12px;
-      color: #94a3b8;
-      padding-bottom: 8px;
+    .ghost {
+      background: #94a3b8;
     }
+
+    .empty { visibility: hidden; }
   </style>
 </head>
 <body>
   <main class="app">
-    <section class="hero">
-      <span class="badge">HTML5 Mobile</span>
-      <h1>欢迎来到 ecClaw 移动页面</h1>
-      <p>这个页面已做手机端适配，支持窄屏、触屏和高分辨率设备。</p>
-      <button class="btn" onclick="alert('页面运行正常 ✅')">点我测试</button>
+    <section class="panel">
+      <div class="top">
+        <div class="title">贪吃蛇</div>
+        <div class="score">分数: <span id="score">0</span></div>
+      </div>
+      <div class="hint">手势/按钮/键盘方向键都可控制，撞墙或撞自己即结束。</div>
     </section>
 
-    <section class="grid">
-      <article class="card">
-        <strong>响应式</strong>
-        <p>视口自适应</p>
-      </article>
-      <article class="card">
-        <strong>轻量</strong>
-        <p>纯 HTML + CSS</p>
-      </article>
+    <section class="panel">
+      <canvas id="game" width="360" height="360" aria-label="snake game"></canvas>
     </section>
 
-    <div class="footer">Built for mobile web preview</div>
+    <section class="panel actions">
+      <button class="empty" aria-hidden="true">.</button>
+      <button data-dir="up">上</button>
+      <button class="ghost" id="restart">重开</button>
+      <button data-dir="left">左</button>
+      <button data-dir="down">下</button>
+      <button data-dir="right">右</button>
+    </section>
   </main>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const restartBtn = document.getElementById('restart');
+    const dirBtns = document.querySelectorAll('[data-dir]');
+
+    const gridSize = 18;
+    const tile = canvas.width / gridSize;
+
+    let snake, direction, nextDirection, food, score, timer, speed;
+
+    function randPos() {
+      return {
+        x: Math.floor(Math.random() * gridSize),
+        y: Math.floor(Math.random() * gridSize),
+      };
+    }
+
+    function reset() {
+      snake = [{ x: 9, y: 9 }, { x: 8, y: 9 }, { x: 7, y: 9 }];
+      direction = 'right';
+      nextDirection = 'right';
+      score = 0;
+      speed = 150;
+      scoreEl.textContent = score;
+      spawnFood();
+      restartLoop();
+      draw();
+    }
+
+    function spawnFood() {
+      let p;
+      do {
+        p = randPos();
+      } while (snake.some(s => s.x === p.x && s.y === p.y));
+      food = p;
+    }
+
+    function setDirection(dir) {
+      const opposite = {
+        up: 'down',
+        down: 'up',
+        left: 'right',
+        right: 'left',
+      };
+      if (dir !== opposite[direction]) nextDirection = dir;
+    }
+
+    function step() {
+      direction = nextDirection;
+      const head = { ...snake[0] };
+      if (direction === 'up') head.y -= 1;
+      if (direction === 'down') head.y += 1;
+      if (direction === 'left') head.x -= 1;
+      if (direction === 'right') head.x += 1;
+
+      const hitWall = head.x < 0 || head.y < 0 || head.x >= gridSize || head.y >= gridSize;
+      const hitSelf = snake.some(s => s.x === head.x && s.y === head.y);
+      if (hitWall || hitSelf) {
+        clearInterval(timer);
+        alert(`游戏结束，得分 ${score}`);
+        return;
+      }
+
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score += 1;
+        scoreEl.textContent = score;
+        spawnFood();
+        if (speed > 80 && score % 3 === 0) {
+          speed -= 8;
+          restartLoop();
+        }
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    function restartLoop() {
+      clearInterval(timer);
+      timer = setInterval(step, speed);
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = '#e5ecfb';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= gridSize; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * tile, 0);
+        ctx.lineTo(i * tile, canvas.height);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, i * tile);
+        ctx.lineTo(canvas.width, i * tile);
+        ctx.stroke();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--food').trim();
+      ctx.fillRect(food.x * tile + 2, food.y * tile + 2, tile - 4, tile - 4);
+
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--snake').trim();
+      snake.forEach((s, i) => {
+        const pad = i === 0 ? 1 : 2;
+        ctx.fillRect(s.x * tile + pad, s.y * tile + pad, tile - pad * 2, tile - pad * 2);
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const keyMap = {
+        ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+      };
+      if (keyMap[e.key]) {
+        e.preventDefault();
+        setDirection(keyMap[e.key]);
+      }
+    }, { passive: false });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    canvas.addEventListener('touchstart', (e) => {
+      const t = e.changedTouches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', (e) => {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        setDirection(dx > 10 ? 'right' : 'left');
+      } else {
+        setDirection(dy > 10 ? 'down' : 'up');
+      }
+    }, { passive: true });
+
+    dirBtns.forEach(btn => btn.addEventListener('click', () => setDirection(btn.dataset.dir)));
+    restartBtn.addEventListener('click', reset);
+
+    reset();
+  </script>
 </body>
 </html>
