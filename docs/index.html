@@ -3,175 +3,420 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>To Do List</title>
+  <title>AI Daily Brief</title>
   <style>
     :root {
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --line: #dbe3ef;
-      --text: #1f2937;
-      --muted: #64748b;
-      --brand: #2563eb;
-      --ok: #16a34a;
-      --danger: #ef4444;
+      --bg: #f3f4f1;
+      --paper: #fffdfa;
+      --ink: #171717;
+      --muted: #6f6b63;
+      --rule: #d8d1c4;
+      --accent: #b91c1c;
+      --accent-2: #0f766e;
+      --signal: #111827;
+      --soft: #ece7dc;
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      background: linear-gradient(180deg, #eaf2ff 0%, var(--bg) 40%, #f8fafc 100%);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-      color: var(--text);
       min-height: 100dvh;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(23, 23, 23, 0.035) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(180deg, #ede7dc 0%, var(--bg) 52%, #f8f7f2 100%);
+      font-family: Georgia, "Times New Roman", "Songti SC", "SimSun", serif;
+    }
+
+    .shell {
+      width: min(100%, 860px);
+      margin: 0 auto;
+      background: var(--paper);
+      min-height: 100dvh;
+      border-left: 1px solid rgba(23, 23, 23, 0.08);
+      border-right: 1px solid rgba(23, 23, 23, 0.08);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(255, 253, 250, 0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--ink);
+      padding: max(12px, env(safe-area-inset-top)) 16px 10px;
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .brand {
+      font-size: clamp(27px, 8vw, 54px);
+      line-height: 0.92;
+      letter-spacing: 0;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .date {
+      text-align: right;
+      color: var(--muted);
+      font: 600 12px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      white-space: nowrap;
+    }
+
+    .ticker {
       display: flex;
-      justify-content: center;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 10px 0 0;
+      scrollbar-width: none;
+      font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .ticker::-webkit-scrollbar { display: none; }
+
+    .pill {
+      flex: 0 0 auto;
+      border: 1px solid var(--rule);
+      background: #fff;
+      padding: 8px 10px;
+      border-radius: 999px;
+    }
+
+    main { padding: 14px 16px 28px; }
+
+    .lead {
+      display: grid;
+      gap: 12px;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 16px;
+    }
+
+    .label {
+      display: inline-flex;
+      width: fit-content;
+      background: var(--accent);
+      color: #fff;
+      padding: 5px 8px;
+      font: 800 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(31px, 9vw, 62px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .deck {
+      margin: 0;
+      color: #34302b;
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .brief-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--rule);
+      background: #fbf7ef;
+    }
+
+    .metric {
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .metric + .metric { border-left: 1px solid var(--rule); }
+
+    .metric b {
+      display: block;
+      font: 800 18px/1.1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font: 600 11px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 18px 0 10px;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 6px;
+      font: 900 16px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .section-title small {
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .story-list {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .story {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .thumb {
+      aspect-ratio: 1 / 1;
+      background:
+        linear-gradient(135deg, rgba(185, 28, 28, 0.92), rgba(15, 118, 110, 0.88)),
+        repeating-linear-gradient(45deg, transparent 0 8px, rgba(255, 255, 255, 0.28) 8px 10px);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font: 900 16px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .story h2 {
+      margin: 0 0 5px;
+      font-size: 19px;
+      line-height: 1.16;
+      letter-spacing: 0;
+    }
+
+    .story p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      font: 700 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--accent-2);
+    }
+
+    .analysis {
+      background: var(--signal);
+      color: #f8fafc;
       padding: 16px;
+      margin-top: 18px;
     }
-    .app { width: 100%; max-width: 460px; display: grid; gap: 12px; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px;
+
+    .analysis h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.05;
     }
-    h1 { margin: 0 0 8px; font-size: 22px; }
-    .meta { color: var(--muted); font-size: 13px; }
-    .input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
-    input {
-      width: 100%; border: 1px solid var(--line); border-radius: 10px;
-      padding: 12px; font-size: 16px; outline: none;
+
+    .analysis p {
+      margin: 0;
+      color: #d1d5db;
+      line-height: 1.55;
+      font-size: 15px;
     }
-    input:focus { border-color: var(--brand); }
-    button {
-      border: 0; border-radius: 10px; padding: 10px 14px;
-      background: var(--brand); color: #fff; font-weight: 600; font-size: 14px;
+
+    .company-board {
+      display: grid;
+      gap: 8px;
     }
-    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-    li {
-      display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
-      border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+
+    .company {
+      display: grid;
+      grid-template-columns: 82px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--rule);
+      font: 700 13px/1.25 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    .done-text { text-decoration: line-through; color: #94a3b8; }
-    .check {
-      width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--brand);
-      display: grid; place-items: center; cursor: pointer; font-size: 12px;
-      color: white; background: white;
+
+    .bar {
+      height: 8px;
+      background: var(--soft);
+      overflow: hidden;
     }
-    .check.done { background: var(--ok); border-color: var(--ok); }
-    .del { background: var(--danger); padding: 8px 10px; font-size: 12px; }
-    .footer { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; }
-    .ghost { background: #94a3b8; }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    footer {
+      padding: 18px 16px max(22px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      font: 600 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (min-width: 720px) {
+      main { padding: 18px 24px 34px; }
+      .brief-grid { grid-template-columns: 1.35fr 0.85fr; align-items: start; }
+      .lead { grid-column: 1 / -1; }
+      .story { grid-template-columns: 96px 1fr; }
+      footer { padding-left: 24px; padding-right: 24px; }
+    }
   </style>
 </head>
 <body>
-  <main class="app">
-    <section class="card">
-      <h1>To Do List</h1>
-      <div class="meta">本地自动保存，刷新页面也不会丢。</div>
-    </section>
-
-    <section class="card">
-      <div class="input-row">
-        <input id="todoInput" type="text" placeholder="输入待办事项..." maxlength="120" />
-        <button id="addBtn">添加</button>
+  <div class="shell">
+    <header>
+      <div class="masthead">
+        <div class="brand">AI Daily Brief</div>
+        <div class="date">
+          <span id="today">Daily</span><br />
+          China + Global
+        </div>
       </div>
-    </section>
+      <nav class="ticker" aria-label="company focus">
+        <span class="pill">OpenAI</span>
+        <span class="pill">Google DeepMind</span>
+        <span class="pill">Anthropic</span>
+        <span class="pill">Meta AI</span>
+        <span class="pill">NVIDIA</span>
+        <span class="pill">百度</span>
+        <span class="pill">阿里</span>
+        <span class="pill">腾讯</span>
+        <span class="pill">字节</span>
+        <span class="pill">华为</span>
+      </nav>
+    </header>
 
-    <section class="card">
-      <ul id="list"></ul>
-      <div class="footer" style="margin-top: 10px;">
-        <span id="count">0 项</span>
-        <button id="clearDone" class="ghost">清除已完成</button>
+    <main>
+      <section class="lead">
+        <span class="label">Daily Intelligence</span>
+        <h1>头部 AI 公司动态、模型进展与产业信号速读</h1>
+        <p class="deck">聚焦国内外基础模型、算力平台、AI 应用和监管政策，把零散新闻整理成可直接阅读的每日文章。</p>
+        <div class="metric-strip" aria-label="daily metrics">
+          <div class="metric"><b>12</b><span>重点公司</span></div>
+          <div class="metric"><b>24h</b><span>更新周期</span></div>
+          <div class="metric"><b>3min</b><span>阅读目标</span></div>
+        </div>
+      </section>
+
+      <div class="brief-grid">
+        <section>
+          <div class="section-title">
+            <span>今日主线</span>
+            <small>Top Stories</small>
+          </div>
+          <div class="story-list" id="stories"></div>
+        </section>
+
+        <aside>
+          <div class="section-title">
+            <span>公司热度</span>
+            <small>Watchlist</small>
+          </div>
+          <div class="company-board" id="companies"></div>
+
+          <section class="analysis">
+            <h2>编辑判断</h2>
+            <p id="editorNote">今天的阅读重点应放在模型能力迭代、算力供给、企业级落地和政策边界四条线上。后续自动任务会把真实新闻整理成同样结构的日报推送给你。</p>
+          </section>
+        </aside>
       </div>
-    </section>
-  </main>
+    </main>
+
+    <footer>
+      页面已按移动端新闻 App 形态设计。每日推送由自动任务负责生成内容；网页用于展示摘要结构和长期访问入口。
+    </footer>
+  </div>
 
   <script>
-    const KEY = 'ecclaw_todos_v1';
-    const input = document.getElementById('todoInput');
-    const addBtn = document.getElementById('addBtn');
-    const list = document.getElementById('list');
-    const count = document.getElementById('count');
-    const clearDone = document.getElementById('clearDone');
-
-    let todos = [];
-
-    function save() {
-      localStorage.setItem(KEY, JSON.stringify(todos));
-    }
-
-    function load() {
-      try {
-        todos = JSON.parse(localStorage.getItem(KEY) || '[]');
-        if (!Array.isArray(todos)) todos = [];
-      } catch {
-        todos = [];
+    const stories = [
+      {
+        mark: '01',
+        title: '基础模型公司进入高频迭代期',
+        summary: '重点跟踪 OpenAI、Google DeepMind、Anthropic、Meta，以及国内通义、文心、豆包、混元等模型线的能力更新和产品化节奏。',
+        meta: ['模型', '产品', '竞争格局']
+      },
+      {
+        mark: '02',
+        title: 'AI 算力仍是产业链核心变量',
+        summary: 'NVIDIA、AMD、云厂商和国产算力生态的供应变化，会直接影响模型训练成本、推理价格和企业落地速度。',
+        meta: ['算力', '云平台', '芯片']
+      },
+      {
+        mark: '03',
+        title: '企业应用从演示走向工作流',
+        summary: 'Agent、代码助手、搜索、办公、客服、营销和数据分析，是头部 AI 公司最容易形成收入闭环的方向。',
+        meta: ['Agent', 'SaaS', '商业化']
+      },
+      {
+        mark: '04',
+        title: '监管与版权继续影响产品边界',
+        summary: '重点关注中美欧政策、数据合规、模型安全评测、内容版权诉讼和开源模型许可证变化。',
+        meta: ['监管', '版权', '安全']
       }
-    }
+    ];
 
-    function addTodo(text) {
-      const value = text.trim();
-      if (!value) return;
-      todos.unshift({ id: Date.now(), text: value, done: false });
-      save();
-      render();
-      input.value = '';
-      input.focus();
-    }
+    const companies = [
+      ['OpenAI', 92, '模型与应用入口'],
+      ['Google', 86, '多模态与搜索生态'],
+      ['Anthropic', 78, '企业级安全路线'],
+      ['NVIDIA', 95, 'AI 算力定价权'],
+      ['阿里通义', 82, '云与开源生态'],
+      ['百度文心', 74, '搜索与智能体'],
+      ['字节豆包', 80, '消费级产品分发'],
+      ['华为盘古', 72, '行业模型与国产算力']
+    ];
 
-    function toggleTodo(id) {
-      todos = todos.map(t => t.id === id ? { ...t, done: !t.done } : t);
-      save();
-      render();
-    }
+    document.getElementById('today').textContent = new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short'
+    }).format(new Date());
 
-    function deleteTodo(id) {
-      todos = todos.filter(t => t.id !== id);
-      save();
-      render();
-    }
+    document.getElementById('stories').innerHTML = stories.map((item) => `
+      <article class="story">
+        <div class="thumb">${item.mark}</div>
+        <div>
+          <h2>${item.title}</h2>
+          <p>${item.summary}</p>
+          <div class="meta">${item.meta.map(tag => `<span>${tag}</span>`).join('')}</div>
+        </div>
+      </article>
+    `).join('');
 
-    function render() {
-      list.innerHTML = '';
-      todos.forEach(todo => {
-        const li = document.createElement('li');
-
-        const check = document.createElement('button');
-        check.className = 'check' + (todo.done ? ' done' : '');
-        check.textContent = todo.done ? '✓' : '';
-        check.addEventListener('click', () => toggleTodo(todo.id));
-
-        const text = document.createElement('div');
-        text.textContent = todo.text;
-        if (todo.done) text.className = 'done-text';
-
-        const del = document.createElement('button');
-        del.className = 'del';
-        del.textContent = '删除';
-        del.addEventListener('click', () => deleteTodo(todo.id));
-
-        li.appendChild(check);
-        li.appendChild(text);
-        li.appendChild(del);
-        list.appendChild(li);
-      });
-
-      const doneCount = todos.filter(t => t.done).length;
-      count.textContent = `${todos.length} 项（已完成 ${doneCount}）`;
-    }
-
-    addBtn.addEventListener('click', () => addTodo(input.value));
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') addTodo(input.value);
-    });
-
-    clearDone.addEventListener('click', () => {
-      todos = todos.filter(t => !t.done);
-      save();
-      render();
-    });
-
-    load();
-    render();
+    document.getElementById('companies').innerHTML = companies.map(([name, score, note]) => `
+      <div class="company">
+        <span>${name}</span>
+        <span class="bar"><i style="width:${score}%"></i></span>
+        <span class="tagline">${note}</span>
+      </div>
+    `).join('');
   </script>
 </body>
 </html>
