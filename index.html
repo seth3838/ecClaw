@@ -203,6 +203,15 @@
       letter-spacing: 0;
     }
 
+    .story h2 a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .story h2 a:active {
+      color: var(--accent);
+    }
+
     .story p {
       margin: 0;
       color: var(--muted);
@@ -272,6 +281,91 @@
       font-weight: 600;
     }
 
+    .detail {
+      display: none;
+      padding-top: 8px;
+    }
+
+    .detail.active {
+      display: block;
+    }
+
+    .home.hidden {
+      display: none;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--rule);
+      background: #fff;
+      color: var(--signal);
+      padding: 9px 11px;
+      margin-bottom: 14px;
+      font: 800 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-decoration: none;
+    }
+
+    .detail-hero {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+
+    .detail-hero h1 {
+      margin-top: 10px;
+    }
+
+    .byline {
+      color: var(--muted);
+      margin-top: 10px;
+      font: 700 12px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .article-body {
+      display: grid;
+      gap: 16px;
+    }
+
+    .article-body p {
+      margin: 0;
+      color: #2d2924;
+      font-size: 17px;
+      line-height: 1.72;
+    }
+
+    .takeaway-box {
+      border-left: 4px solid var(--accent);
+      background: #fbf7ef;
+      padding: 12px;
+      font: 700 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .detail-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .detail-card {
+      border-top: 1px solid var(--rule);
+      padding-top: 10px;
+    }
+
+    .detail-card b {
+      display: block;
+      margin-bottom: 5px;
+      font: 900 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--accent-2);
+    }
+
+    .detail-card span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
     footer {
       padding: 18px 16px max(22px, env(safe-area-inset-bottom));
       border-top: 1px solid var(--rule);
@@ -324,7 +418,8 @@
         </div>
       </section>
 
-      <div class="brief-grid">
+      <div class="home" id="homeView">
+        <div class="brief-grid">
         <section>
           <div class="section-title">
             <span>今日主线</span>
@@ -345,7 +440,10 @@
             <p id="editorNote">今天的阅读重点应放在模型能力迭代、算力供给、企业级落地和政策边界四条线上。后续自动任务会把真实新闻整理成同样结构的日报推送给你。</p>
           </section>
         </aside>
+        </div>
       </div>
+
+      <article class="detail" id="detailView" aria-live="polite"></article>
     </main>
 
     <footer>
@@ -356,28 +454,60 @@
   <script>
     const stories = [
       {
+        id: 'model-iteration',
         mark: '01',
         title: '基础模型公司进入高频迭代期',
         summary: '重点跟踪 OpenAI、Google DeepMind、Anthropic、Meta，以及国内通义、文心、豆包、混元等模型线的能力更新和产品化节奏。',
-        meta: ['模型', '产品', '竞争格局']
+        meta: ['模型', '产品', '竞争格局'],
+        body: [
+          '基础模型公司的竞争正在从单点参数规模转向多维能力组合：多模态理解、长上下文、工具调用、推理效率、企业可控性和端侧部署能力同时成为评价标准。',
+          '海外头部公司更强调通用模型能力和平台入口，国内公司则更重视云服务、行业场景和消费级超级应用的结合。对用户来说，模型更新本身不再是唯一重点，更新后能否进入搜索、办公、开发、客服和内容生产工作流，才决定商业价值。',
+          '接下来需要重点观察模型能力提升是否伴随推理成本下降，以及新能力是否开放 API、企业管理控制台和可审计的安全能力。'
+        ],
+        takeaway: '高频迭代不是目的，真正的分水岭是能力是否进入稳定可用的产品和工作流。',
+        impact: ['OpenAI / Anthropic：关注企业级模型能力与安全边界。', 'Google / Meta：关注多模态、开源和生态分发。', '阿里 / 百度 / 字节 / 腾讯：关注云、搜索、办公和消费入口。']
       },
       {
+        id: 'ai-compute',
         mark: '02',
         title: 'AI 算力仍是产业链核心变量',
         summary: 'NVIDIA、AMD、云厂商和国产算力生态的供应变化，会直接影响模型训练成本、推理价格和企业落地速度。',
-        meta: ['算力', '云平台', '芯片']
+        meta: ['算力', '云平台', '芯片'],
+        body: [
+          'AI 产业的短期瓶颈仍然集中在算力供给、芯片代际升级、集群网络和推理成本控制。模型公司发布新能力的速度，往往取决于底层 GPU/加速卡、云资源调度和模型压缩技术是否同步成熟。',
+          'NVIDIA 仍处于关键位置，但 AMD、云厂商自研芯片以及国产算力生态正在争取更多训练和推理份额。国内市场还需要同时处理供应链、软硬件适配、开发者生态和成本可控问题。',
+          '如果推理价格继续下降，AI 应用的试错门槛会明显降低；如果高端算力继续紧张，头部平台的集中度会进一步上升。'
+        ],
+        takeaway: '算力不是背景变量，它决定模型能力释放速度、价格曲线和创业公司的生存空间。',
+        impact: ['NVIDIA：继续观察新一代芯片交付和云厂商采购节奏。', '云厂商：关注推理服务价格和企业合同增长。', '国产算力：关注生态适配、框架兼容和大客户落地。']
       },
       {
+        id: 'enterprise-workflow',
         mark: '03',
         title: '企业应用从演示走向工作流',
         summary: 'Agent、代码助手、搜索、办公、客服、营销和数据分析，是头部 AI 公司最容易形成收入闭环的方向。',
-        meta: ['Agent', 'SaaS', '商业化']
+        meta: ['Agent', 'SaaS', '商业化'],
+        body: [
+          'AI 应用正在从演示型功能转向可重复使用的工作流。企业用户关心的不只是模型回答是否聪明，而是权限、数据隔离、日志审计、多人协作、系统集成和结果可追溯。',
+          'Agent 类产品的关键不是让模型自动做一切，而是让模型在明确权限和业务规则内完成检索、分析、生成、调用工具和交付结果。代码助手、客服、销售运营和数据分析是最容易形成闭环的场景。',
+          '判断一个 AI 应用是否真正进入商业化阶段，可以看它是否能嵌入已有系统，并让用户少切换页面、少复制粘贴、少人工校验。'
+        ],
+        takeaway: '企业 AI 的胜负手在于工作流深度，而不是单个聊天窗口的体验。',
+        impact: ['Microsoft / Google：关注办公套件和云服务绑定。', 'OpenAI / Anthropic：关注企业产品和 API 收入。', '国内厂商：关注政企、金融、制造和客服场景。']
       },
       {
+        id: 'policy-copyright',
         mark: '04',
         title: '监管与版权继续影响产品边界',
         summary: '重点关注中美欧政策、数据合规、模型安全评测、内容版权诉讼和开源模型许可证变化。',
-        meta: ['监管', '版权', '安全']
+        meta: ['监管', '版权', '安全'],
+        body: [
+          'AI 产品的能力边界越来越受政策、版权、数据来源和安全评测影响。模型公司需要在训练数据、生成内容、用户隐私和跨境服务之间做更清晰的合规设计。',
+          '海外市场的版权诉讼和欧盟监管会影响训练数据使用方式，国内市场则更强调备案、安全评估、内容治理和行业落地规范。',
+          '开源模型也不等于没有边界。许可证、商用限制、数据来源说明和模型安全责任，会影响企业是否敢把模型放入关键业务。'
+        ],
+        takeaway: '监管不是单纯限制创新，它会重新定义哪些 AI 产品能规模化进入企业和公众场景。',
+        impact: ['模型公司：需要更完整的安全与合规披露。', '企业客户：采购时会更关注审计、私有化和数据边界。', '开源生态：许可证和责任划分会成为竞争因素。']
       }
     ];
 
@@ -399,11 +529,68 @@
       weekday: 'short'
     }).format(new Date());
 
+    const homeView = document.getElementById('homeView');
+    const detailView = document.getElementById('detailView');
+
+    function renderHome() {
+      homeView.classList.remove('hidden');
+      detailView.classList.remove('active');
+      detailView.innerHTML = '';
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    function renderDetail(storyId) {
+      const item = stories.find(story => story.id === storyId);
+      if (!item) {
+        renderHome();
+        return;
+      }
+
+      homeView.classList.add('hidden');
+      detailView.classList.add('active');
+      detailView.innerHTML = `
+        <a class="back" href="#home" aria-label="返回首页">← 返回日报</a>
+        <section class="detail-hero">
+          <span class="label">${item.meta[0]}</span>
+          <h1>${item.title}</h1>
+          <div class="byline">${item.mark} / AI Daily Brief / ${document.getElementById('today').textContent}</div>
+        </section>
+        <section class="article-body">
+          <div class="takeaway-box">${item.takeaway}</div>
+          ${item.body.map(paragraph => `<p>${paragraph}</p>`).join('')}
+          <div class="section-title">
+            <span>影响观察</span>
+            <small>Impact</small>
+          </div>
+          <div class="detail-grid">
+            ${item.impact.map(point => {
+              const [head, rest] = point.split('：');
+              return `<div class="detail-card"><b>${head}</b><span>${rest || point}</span></div>`;
+            }).join('')}
+          </div>
+        </section>
+      `;
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    function route() {
+      const hash = window.location.hash.replace('#', '');
+      if (!hash || hash === 'home') {
+        renderHome();
+        return;
+      }
+      if (hash.startsWith('story-')) {
+        renderDetail(hash.replace('story-', ''));
+        return;
+      }
+      renderHome();
+    }
+
     document.getElementById('stories').innerHTML = stories.map((item) => `
       <article class="story">
         <div class="thumb">${item.mark}</div>
         <div>
-          <h2>${item.title}</h2>
+          <h2><a href="#story-${item.id}">${item.title}</a></h2>
           <p>${item.summary}</p>
           <div class="meta">${item.meta.map(tag => `<span>${tag}</span>`).join('')}</div>
         </div>
@@ -417,6 +604,9 @@
         <span class="tagline">${note}</span>
       </div>
     `).join('');
+
+    window.addEventListener('hashchange', route);
+    route();
   </script>
 </body>
 </html>
