@@ -281,91 +281,6 @@
       font-weight: 600;
     }
 
-    .detail {
-      display: none;
-      padding-top: 8px;
-    }
-
-    .detail.active {
-      display: block;
-    }
-
-    .home.hidden {
-      display: none;
-    }
-
-    .back {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid var(--rule);
-      background: #fff;
-      color: var(--signal);
-      padding: 9px 11px;
-      margin-bottom: 14px;
-      font: 800 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      text-decoration: none;
-    }
-
-    .detail-hero {
-      border-bottom: 2px solid var(--ink);
-      padding-bottom: 14px;
-      margin-bottom: 14px;
-    }
-
-    .detail-hero h1 {
-      margin-top: 10px;
-    }
-
-    .byline {
-      color: var(--muted);
-      margin-top: 10px;
-      font: 700 12px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .article-body {
-      display: grid;
-      gap: 16px;
-    }
-
-    .article-body p {
-      margin: 0;
-      color: #2d2924;
-      font-size: 17px;
-      line-height: 1.72;
-    }
-
-    .takeaway-box {
-      border-left: 4px solid var(--accent);
-      background: #fbf7ef;
-      padding: 12px;
-      font: 700 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .detail-grid {
-      display: grid;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .detail-card {
-      border-top: 1px solid var(--rule);
-      padding-top: 10px;
-    }
-
-    .detail-card b {
-      display: block;
-      margin-bottom: 5px;
-      font: 900 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--accent-2);
-    }
-
-    .detail-card span {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
     footer {
       padding: 18px 16px max(22px, env(safe-area-inset-bottom));
       border-top: 1px solid var(--rule);
@@ -418,8 +333,7 @@
         </div>
       </section>
 
-      <div class="home" id="homeView">
-        <div class="brief-grid">
+      <div class="brief-grid">
         <section>
           <div class="section-title">
             <span>今日新模型</span>
@@ -446,10 +360,7 @@
             <p id="editorNote">首页只显示新模型和新工具，减少噪音；需要背景、影响和适用场景时点进详情页阅读。</p>
           </section>
         </aside>
-        </div>
       </div>
-
-      <article class="detail" id="detailView" aria-live="polite"></article>
     </main>
 
     <footer>
@@ -569,69 +480,12 @@
       weekday: 'short'
     }).format(new Date());
 
-    const homeView = document.getElementById('homeView');
-    const detailView = document.getElementById('detailView');
-
-    function renderHome() {
-      homeView.classList.remove('hidden');
-      detailView.classList.remove('active');
-      detailView.innerHTML = '';
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-
-    function renderDetail(storyId) {
-      const item = stories.find(story => story.id === storyId);
-      if (!item) {
-        renderHome();
-        return;
-      }
-
-      homeView.classList.add('hidden');
-      detailView.classList.add('active');
-      detailView.innerHTML = `
-        <a class="back" href="#home" aria-label="返回首页">← 返回日报</a>
-        <section class="detail-hero">
-          <span class="label">${item.type === 'model' ? 'New Model' : 'New Tool'}</span>
-          <h1>${item.title}</h1>
-          <div class="byline">${item.mark} / AI Launch Radar / ${document.getElementById('today').textContent}</div>
-        </section>
-        <section class="article-body">
-          <div class="takeaway-box">${item.takeaway}</div>
-          ${item.body.map(paragraph => `<p>${paragraph}</p>`).join('')}
-          <div class="section-title">
-            <span>使用判断</span>
-            <small>Impact</small>
-          </div>
-          <div class="detail-grid">
-            ${item.impact.map(point => {
-              const [head, rest] = point.split('：');
-              return `<div class="detail-card"><b>${head}</b><span>${rest || point}</span></div>`;
-            }).join('')}
-          </div>
-        </section>
-      `;
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-
-    function route() {
-      const hash = window.location.hash.replace('#', '');
-      if (!hash || hash === 'home') {
-        renderHome();
-        return;
-      }
-      if (hash.startsWith('story-')) {
-        renderDetail(hash.replace('story-', ''));
-        return;
-      }
-      renderHome();
-    }
-
     function renderStoryList(items) {
       return items.map((item) => `
       <article class="story">
         <div class="thumb">${item.mark}</div>
         <div>
-          <h2><a href="#story-${item.id}">${item.title}</a></h2>
+          <h2><a href="detail.html?id=${item.id}">${item.title}</a></h2>
           <p>${item.summary}</p>
           <div class="meta">${item.meta.map(tag => `<span>${tag}</span>`).join('')}</div>
         </div>
@@ -654,8 +508,6 @@
       </div>
     `).join('');
 
-    window.addEventListener('hashchange', route);
-    route();
   </script>
 </body>
 </html>
